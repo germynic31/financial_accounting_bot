@@ -3,10 +3,12 @@ import os
 from database import init_db
 from dotenv import load_dotenv
 from handlers import (
-    add_transaction,
     button_click,
     handle_message,
+    how_to_use,
     profile,
+    set_limit_command,
+    show_limits,
     start,
 )
 from telegram.ext import (
@@ -32,8 +34,10 @@ def main():
     ).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("add", add_transaction))
+    application.add_handler(CommandHandler("how_to_use", how_to_use))
     application.add_handler(CommandHandler("profile", profile))
+    application.add_handler(CommandHandler("setlimit", set_limit_command))
+    application.add_handler(CommandHandler("limits", show_limits))
     application.add_handler(CallbackQueryHandler(button_click))
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message),

@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 from crud import (
     create_transaction,
     create_user,
+    get_limits,
     get_user,
     get_user_stats,
     get_user_transactions,
+    set_limit,
 )
 from database import SessionLocal
 from keyboards import (
+    back_to_profile_keyboard,
     get_main_reply_keyboard,
     history_pagination_keyboard,
     profile_keyboard,
@@ -53,12 +56,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def add_transaction(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Возвращает сообщение про создание операций."""
-    await update.message.reply_text(
-        "💸 Введите сумму и категорию в формате:\n"
-        "`+30000 зарплата` (доход) или `-500 такси` (расход)",
-    )
+async def how_to_use(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Возвращает сообщение-гайд по боту."""
+    text = """
+💸 Введите сумму и категорию в формате:
+`+30000 зарплата` (доход) или `-500 такси` (расход)
+
+🚨 Лимит на категорию можно указать в формате:
+"/setlimit [категория] [сумма]"
+Посмотреть лимиты можно в профиле по кнопке или по команде:
+"/limits"
+    """
+    await update.message.reply_text(text)
 
 
 # Кнопка "Профиль"
@@ -99,6 +108,24 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "delete_stats":
         await query.delete_message()
+        return
+
+    elif query.data == "limits":
+        db = next(get_db())
+        limits = get_limits(db, update.effective_user.id)
+
+        if not limits:
+            await update.message.reply_text("У вас нет установленных лимитов")
+            return
+
+        text = "📊 Ваши лимиты:\n" + "\n".join(
+            f"• {limit.category_name}: {limit.amount} ₽"
+            for limit in limits
+        )
+        await query.edit_message_text(
+            text,
+            reply_markup=back_to_profile_keyboard(),
+        )
         return
 
     elif query.data == "stats":
@@ -148,8 +175,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text.strip()
 
-    if text == "➕ Как добавить запись?":
-        await add_transaction(update, context)
+    if text == "❔ Как пользоваться?":
+        await how_to_use(update, context)
         return
     if text == "👤 Профиль":
         await profile(update, context)
@@ -178,3 +205,46 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "❌ Неверный формат. Пример: `-500 такси` или `+30000 зарплата`",
         )
+
+
+async def set_limit_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    """Обработчик создания лимита."""
+    try:
+        args = context.args
+        if len(args) != 2:
+            raise ValueError
+
+        category = args[0]
+        amount = float(args[1])
+
+        db = next(get_db())
+        set_limit(db, update.effective_user.id, category, amount)
+
+        await update.message.reply_text(
+            f"✅ Лимит для категории «{category}» установлен: {amount} ₽",
+            reply_markup=profile_keyboard(),
+        )
+    except Exception:
+        await update.message.reply_text(
+            "❌ Используйте: /setlimit [категория] [сумма]\n"
+            "Пример: /setlimit продукты 5000",
+        )
+
+
+async def show_limits(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик вывода лимита."""
+    db = next(get_db())
+    limits = get_limits(db, update.effective_user.id)
+
+    if not limits:
+        await update.message.reply_text("У вас нет установленных лимитов")
+        return
+
+    text = "📊 Ваши лимиты:\n" + "\n".join(
+        f"• {limit.category_name}: {limit.amount} ₽"
+        for limit in limits
+    )
+    await update.message.reply_text(text)

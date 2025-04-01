@@ -26,6 +26,7 @@ class User(Base):
     username = Column(String)
     categories = relationship("Category", back_populates="user")
     transactions = relationship("Transaction", back_populates="user")
+    limits = relationship("Limit", back_populates="user")
 
 
 class Category(Base):
@@ -49,3 +50,13 @@ class Transaction(Base):
     category_id = Column(Integer, ForeignKey('categories.id'))
     user = relationship("User", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")
+
+
+class Limit(Base):
+    """Модель лимита."""
+
+    __tablename__ = 'limits'
+    user_id = Column(Integer, ForeignKey('users.id'))
+    category_name = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    user = relationship("User", back_populates="limits")

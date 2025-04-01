@@ -11,7 +11,8 @@ def profile_keyboard():
         [InlineKeyboardButton("📊 Статистика", callback_data="stats")],
         [InlineKeyboardButton(
             "📝 История операций", callback_data="history_1",
-        )],  # 1 - страница
+        )],
+        [InlineKeyboardButton("🧾 Лимиты", callback_data="limits")],
     ]
     return InlineKeyboardMarkup(buttons)
 
@@ -48,6 +49,6 @@ def history_pagination_keyboard(page: int, total_pages: int):
 def get_main_reply_keyboard():
     """Возвращает основную клавиатуру."""
     buttons = [
-        ["➕ Как добавить запись?", "👤 Профиль"],
+        ["👤 Профиль", "❔ Как пользоваться?"],
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
