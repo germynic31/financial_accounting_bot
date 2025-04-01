@@ -1,21 +1,20 @@
 import os
 
-from dotenv import load_dotenv
-from telegram.ext import (
-    Application,
-    CallbackQueryHandler,
-    CommandHandler,
-    MessageHandler,
-    filters,
-)
-
 from database import init_db
+from dotenv import load_dotenv
 from handlers import (
     add_transaction,
     button_click,
     handle_message,
     profile,
     start,
+)
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    CommandHandler,
+    MessageHandler,
+    filters,
 )
 
 load_dotenv()

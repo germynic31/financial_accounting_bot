@@ -48,6 +48,6 @@ def history_pagination_keyboard(page: int, total_pages: int):
 def get_main_reply_keyboard():
     """Возвращает основную клавиатуру."""
     buttons = [
-        ["➕ Добавить запись", "👤 Профиль"],
+        ["➕ Как добавить запись?", "👤 Профиль"],
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)

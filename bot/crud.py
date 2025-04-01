@@ -1,10 +1,9 @@
 from typing import Dict, List
 
-from sqlalchemy import func
-from sqlalchemy.orm import Session
-
 from models import Category, Transaction, User
 from schemas import CategoryCreate, TransactionCreate, UserCreate
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 
 def get_user(db: Session, telegram_id: int):
@@ -63,7 +62,7 @@ def get_user_transactions(
     offset = (page - 1) * per_page
     return db.query(Transaction).filter(
         Transaction.user_id == user_id,
-    ).order_by(Transaction.date.desc()).offset(offset).limit(per_page).all()
+    ).order_by(Transaction.created_at.desc()).offset(offset).limit(per_page).all()
 
 
 def get_or_create_category(db: Session, category: CategoryCreate) -> Category:

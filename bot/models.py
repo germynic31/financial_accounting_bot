@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.orm import relationship, declared_attr
+from sqlalchemy.orm import declared_attr, relationship
 
 
 @as_declarative()
@@ -21,6 +21,7 @@ class Base:
 class User(Base):
     """Модель пользователя."""
 
+    __tablename__ = 'users'
     telegram_id = Column(Integer, unique=True, nullable=False)
     username = Column(String)
     categories = relationship("Category", back_populates="user")
@@ -30,6 +31,7 @@ class User(Base):
 class Category(Base):
     """Модель категории."""
 
+    __tablename__ = 'categories'
     name = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="categories")
@@ -39,7 +41,7 @@ class Category(Base):
 class Transaction(Base):
     """Модель операции."""
 
-    # TODO: сделать enum
+    __tablename__ = 'transactions'
     amount = Column(Float, nullable=False)
     type = Column(String, nullable=False)  # "income" или "expense"
     description = Column(String)

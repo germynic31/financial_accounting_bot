@@ -1,10 +1,6 @@
 from io import BytesIO
 
 import matplotlib.pyplot as plt
-from pydantic import ValidationError
-from telegram import Update
-from telegram.ext import ContextTypes
-
 from crud import (
     create_transaction,
     create_user,
@@ -19,7 +15,10 @@ from keyboards import (
     profile_keyboard,
     remove_stats_keyboard,
 )
+from pydantic import ValidationError
 from schemas import TransactionCreate, UserCreate
+from telegram import Update
+from telegram.ext import ContextTypes
 
 
 def get_db():
@@ -133,7 +132,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 type_operation = 'трата'
             history_text += (
-                f"{i}. {tx.date.strftime('%d.%m.%Y')} |"
+                f"{i}. {tx.created_at.strftime('%d.%m.%Y')} |"
                 f" {type_operation}: {tx.amount} ₽ ({tx.category.name})\n"
             )
 
@@ -149,7 +148,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text.strip()
 
-    if text == "➕ Добавить запись":
+    if text == "➕ Как добавить запись?":
         await add_transaction(update, context)
         return
     if text == "👤 Профиль":
