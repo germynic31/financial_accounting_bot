@@ -44,5 +44,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # TODO: переместить все файлы кроме main в директорию app
     main()

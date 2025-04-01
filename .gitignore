@@ -175,3 +175,6 @@ cython_debug/
 
 # Jetbrains configuration file
 .idea/
+*.db
+*.sqlite3
+*.bak
