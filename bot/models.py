@@ -1,6 +1,15 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from enums import TransactionEnum
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import declared_attr, relationship
 
@@ -44,7 +53,7 @@ class Transaction(Base):
 
     __tablename__ = 'transactions'
     amount = Column(Float, nullable=False)
-    type = Column(String, nullable=False)  # "income" или "expense"
+    type = Column(Enum(TransactionEnum), nullable=False)
     description = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
     category_id = Column(Integer, ForeignKey('categories.id'))
@@ -59,4 +68,6 @@ class Limit(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     category_name = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
+    period = Column(String, default='month')  # TODO: enum month/week/year
+    last_renewed = Column(DateTime, default=datetime.now)
     user = relationship("User", back_populates="limits")

@@ -1,7 +1,8 @@
 from typing import Dict, List
 
+from enums import TransactionEnum
 from models import Category, Limit, Transaction, User
-from schemas import CategoryCreate, TransactionCreate, UserCreate
+from schemas import CategoryCreate, LimitCreate, TransactionCreate, UserCreate
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -81,8 +82,11 @@ def get_or_create_category(db: Session, category: CategoryCreate) -> Category:
     return db_category
 
 
-def set_limit(db: Session, user_id: int, category_name: str, amount: float):
+def set_limit(db: Session, limit: LimitCreate):
     """Создает и возвращает лимит."""
+    user_id = limit.user_id
+    category_name = limit.category_name
+    amount = limit.amount
     db.query(Limit).filter(
         Limit.user_id == user_id,
         Limit.category_name == category_name,
@@ -128,14 +132,16 @@ def create_transaction(
         user_id=user_id,
         description=transaction.description,
     )
+    db.add(db_transaction)
+    db.commit()
 
-    if transaction.type == "expense":
+    if transaction.type == TransactionEnum.expense:
         limit = get_limit(db, user_id, transaction.category_name)
         if limit:
             spent = db.query(func.sum(Transaction.amount)).filter(
                 Transaction.user_id == user_id,
                 Transaction.category_id == category.id,
-                Transaction.type == "expense",
+                Transaction.type == TransactionEnum.expense,
             ).scalar() or 0
 
             remaining = limit.amount - spent
@@ -149,3 +155,12 @@ def create_transaction(
                 }
 
     return {"status": "success", "transaction": db_transaction}
+
+
+def delete_limit(db: Session, user_id: int, category_name: str):
+    """Удаляет лимит."""
+    db.query(Limit).filter(
+        Limit.user_id == user_id,
+        Limit.category_name == category_name,
+    ).delete()
+    db.commit()

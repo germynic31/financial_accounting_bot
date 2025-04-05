@@ -1,17 +1,18 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, validator
+from enums import TransactionEnum
+from pydantic import BaseModel, Field, field_validator
 
 
 class TransactionCreate(BaseModel):
     """Схема создания операции."""
 
     amount: float = Field(..., gt=0)
-    type: str = Field(..., pattern="^(income|expense)$")
+    type: TransactionEnum
     category_name: str = Field(..., min_length=1, max_length=50)
     description: Optional[str] = None
 
-    @validator("amount")
+    @field_validator("amount")
     def round_amount(cls, value: float):
         return round(value, 2)
 
@@ -28,3 +29,11 @@ class CategoryCreate(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=50)
     user_id: int = Field(..., gt=0)
+
+
+class LimitCreate(BaseModel):
+    """Схема создания лимита."""
+
+    user_id: int = Field(..., gt=0)
+    category_name: str
+    amount: float

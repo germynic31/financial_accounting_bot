@@ -1,6 +1,4 @@
-from io import BytesIO
-
-import matplotlib.pyplot as plt
+from constants import HOW_TO_USE_MSG, NO_HAVE_LIMITS_MSG
 from crud import (
     create_transaction,
     create_user,
@@ -11,6 +9,7 @@ from crud import (
     set_limit,
 )
 from database import SessionLocal
+from enums import TransactionEnum
 from keyboards import (
     back_to_profile_keyboard,
     get_main_reply_keyboard,
@@ -19,9 +18,10 @@ from keyboards import (
     remove_stats_keyboard,
 )
 from pydantic import ValidationError
-from schemas import TransactionCreate, UserCreate
+from schemas import LimitCreate, TransactionCreate, UserCreate
 from telegram import Update
 from telegram.ext import ContextTypes
+from utils import generate_pie_chart
 
 
 def get_db():
@@ -58,33 +58,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def how_to_use(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Возвращает сообщение-гайд по боту."""
-    text = """
-💸 Введите сумму и категорию в формате:
-`+30000 зарплата` (доход) или `-500 такси` (расход)
-
-🚨 Лимит на категорию можно указать в формате:
-"/setlimit [категория] [сумма]"
-Посмотреть лимиты можно в профиле по кнопке или по команде:
-"/limits"
-    """
-    await update.message.reply_text(text)
-
-
-# Кнопка "Профиль"
-async def generate_pie_chart(expenses: dict) -> BytesIO:
-    """Генерирует "пирог" со статистикой трат."""
-    labels = list(expenses.keys())
-    sizes = list(expenses.values())
-
-    fig, ax = plt.subplots()
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')  # Круговая диаграмма
-
-    buffer = BytesIO()
-    plt.savefig(buffer, format='png')
-    buffer.seek(0)
-    plt.close()
-    return buffer
+    await update.message.reply_text(HOW_TO_USE_MSG)
 
 
 async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -115,7 +89,10 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         limits = get_limits(db, update.effective_user.id)
 
         if not limits:
-            await update.message.reply_text("У вас нет установленных лимитов")
+            await query.edit_message_text(
+                NO_HAVE_LIMITS_MSG,
+                reply_markup=back_to_profile_keyboard(),
+            )
             return
 
         text = "📊 Ваши лимиты:\n" + "\n".join(
@@ -183,9 +160,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        amount_part, category_name = text.split(maxsplit=1)
+        amount_part = text.split(maxsplit=1)[0]
+        category_name = (text.split(maxsplit=1)[1]).lower()
         amount = float(amount_part)
-        transaction_type = "income" if amount > 0 else "expense"
+        transaction_type = (
+            TransactionEnum.income if amount > 0 else TransactionEnum.expense
+        )
 
         transaction_data = TransactionCreate(
             amount=abs(amount),
@@ -201,7 +181,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             f"❌ Ошибка в данных: {e.errors()[0]['msg']}",
         )
-    except ValueError:
+    except (IndexError, ValueError):
         await update.message.reply_text(
             "❌ Неверный формат. Пример: `-500 такси` или `+30000 зарплата`",
         )
@@ -217,17 +197,25 @@ async def set_limit_command(
         if len(args) != 2:
             raise ValueError
 
-        category = args[0]
+        category = (args[0]).lower()
         amount = float(args[1])
+        limit_data = LimitCreate(
+            user_id=update.effective_user.id,
+            category_name=category,
+            amount=amount,
+        )
 
         db = next(get_db())
-        set_limit(db, update.effective_user.id, category, amount)
+        set_limit(db, limit_data)
 
         await update.message.reply_text(
             f"✅ Лимит для категории «{category}» установлен: {amount} ₽",
-            reply_markup=profile_keyboard(),
         )
-    except Exception:
+    except ValidationError as e:
+        await update.message.reply_text(
+            f"❌ Ошибка в данных: {e.errors()[0]['msg']}",
+        )
+    except (IndexError, ValueError):
         await update.message.reply_text(
             "❌ Используйте: /setlimit [категория] [сумма]\n"
             "Пример: /setlimit продукты 5000",
@@ -240,7 +228,7 @@ async def show_limits(update: Update, context: ContextTypes.DEFAULT_TYPE):
     limits = get_limits(db, update.effective_user.id)
 
     if not limits:
-        await update.message.reply_text("У вас нет установленных лимитов")
+        await update.message.reply_text(NO_HAVE_LIMITS_MSG)
         return
 
     text = "📊 Ваши лимиты:\n" + "\n".join(
