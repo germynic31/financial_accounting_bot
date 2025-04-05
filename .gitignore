@@ -177,6 +177,7 @@ cython_debug/
 .idea/
 .idea
 .idea/*
+.vscode
 *.db
 *.sqlite3
 *.bak
