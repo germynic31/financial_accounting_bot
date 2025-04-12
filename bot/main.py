@@ -1,7 +1,5 @@
-import os
-
+from core.config import settings
 from database import init_db
-from dotenv import load_dotenv
 from handlers import (
     button_click,
     handle_message,
@@ -19,8 +17,6 @@ from telegram.ext import (
     filters,
 )
 
-load_dotenv()
-
 
 async def post_init(app: Application):
     """Создает базу данных при запуске."""
@@ -30,7 +26,7 @@ async def post_init(app: Application):
 def main():
     """Функция main."""
     application = Application.builder().token(
-        os.getenv("TG_TOKEN"),
+        settings.API_KEY,
     ).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start))

@@ -24,7 +24,7 @@ from telegram.ext import ContextTypes
 from utils import generate_pie_chart
 
 
-def get_db():
+def get_db():  # TODO: сделать Session DI
     """Возвращает экземпляр сессии."""
     db = SessionLocal()
     try:
