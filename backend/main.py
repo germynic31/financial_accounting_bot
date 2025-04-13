@@ -1,14 +1,8 @@
+from bot.handlers.limits import set_limit_command, show_limits
+from bot.handlers.services import button_click, handle_message
+from bot.handlers.utilities import start, how_to_use, profile
 from core.config import settings
-from database import init_db
-from handlers import (
-    button_click,
-    handle_message,
-    how_to_use,
-    profile,
-    set_limit_command,
-    show_limits,
-    start,
-)
+from core.database import init_db
 from telegram.ext import (
     Application,
     CallbackQueryHandler,

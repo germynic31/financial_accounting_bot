@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from enums import TransactionEnum
 from sqlalchemy import (
     Column,
     DateTime,
@@ -12,6 +11,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import declared_attr, relationship
+
+from tools.enums import TransactionEnum
 
 
 @as_declarative()

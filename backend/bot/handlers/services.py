@@ -1,72 +1,19 @@
-from constants import HOW_TO_USE_MSG, NO_HAVE_LIMITS_MSG
-from crud import (
-    create_transaction,
-    create_user,
-    get_limits,
-    get_user,
-    get_user_stats,
-    get_user_transactions,
-    set_limit,
-)
-from database import SessionLocal
-from enums import TransactionEnum
-from keyboards import (
-    back_to_profile_keyboard,
-    get_main_reply_keyboard,
-    history_pagination_keyboard,
-    profile_keyboard,
-    remove_stats_keyboard,
-)
+# TODO: разбить на более понятные функции-обработчики
 from pydantic import ValidationError
-from schemas import LimitCreate, TransactionCreate, UserCreate
 from telegram import Update
 from telegram.ext import ContextTypes
-from utils import generate_pie_chart
 
-
-def get_db():  # TODO: сделать Session DI
-    """Возвращает экземпляр сессии."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды старт."""
-    db = next(get_db())
-    user_id = update.effective_user.id
-    username = update.effective_user.username
-
-    user = get_user(db, user_id)
-    if not user:
-        user_data = UserCreate(telegram_id=user_id, username=username)
-        create_user(db, user_data)
-        await update.message.reply_text(
-            "👋 Добро пожаловать в Финансовый Бот!\n"
-            "Выберите действие:",
-            reply_markup=get_main_reply_keyboard(),
-        )
-    else:
-        await update.message.reply_text(
-            "👋 С возвращением!\n"
-            "Выберите действие:",
-            reply_markup=get_main_reply_keyboard(),
-        )
-
-
-async def how_to_use(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Возвращает сообщение-гайд по боту."""
-    await update.message.reply_text(HOW_TO_USE_MSG)
-
-
-async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Возвращает профиль."""
-    await update.message.reply_text(
-        "👤 Ваш профиль",
-        reply_markup=profile_keyboard(),
-    )
+from bot.constants import NO_HAVE_LIMITS_MSG
+from bot.handlers.utilities import how_to_use, profile
+from bot.keyboards.profile import profile_keyboard, back_to_profile_keyboard, remove_stats_keyboard, \
+    history_pagination_keyboard
+from bot.utils.statistics import generate_pie_chart
+from core.database import get_db
+from crud.limits import get_limits
+from crud.transactions import create_transaction
+from crud.users import get_user_stats, get_user_transactions
+from schemas.transactions import TransactionCreate
+from tools.enums import TransactionEnum
 
 
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -185,54 +132,3 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "❌ Неверный формат. Пример: `-500 такси` или `+30000 зарплата`",
         )
-
-
-async def set_limit_command(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-):
-    """Обработчик создания лимита."""
-    try:
-        args = context.args
-        if len(args) != 2:
-            raise ValueError
-
-        category = (args[0]).lower()
-        amount = float(args[1])
-        limit_data = LimitCreate(
-            user_id=update.effective_user.id,
-            category_name=category,
-            amount=amount,
-        )
-
-        db = next(get_db())
-        set_limit(db, limit_data)
-
-        await update.message.reply_text(
-            f"✅ Лимит для категории «{category}» установлен: {amount} ₽",
-        )
-    except ValidationError as e:
-        await update.message.reply_text(
-            f"❌ Ошибка в данных: {e.errors()[0]['msg']}",
-        )
-    except (IndexError, ValueError):
-        await update.message.reply_text(
-            "❌ Используйте: /setlimit [категория] [сумма]\n"
-            "Пример: /setlimit продукты 5000",
-        )
-
-
-async def show_limits(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик вывода лимита."""
-    db = next(get_db())
-    limits = get_limits(db, update.effective_user.id)
-
-    if not limits:
-        await update.message.reply_text(NO_HAVE_LIMITS_MSG)
-        return
-
-    text = "📊 Ваши лимиты:\n" + "\n".join(
-        f"• {limit.category_name}: {limit.amount} ₽"
-        for limit in limits
-    )
-    await update.message.reply_text(text)

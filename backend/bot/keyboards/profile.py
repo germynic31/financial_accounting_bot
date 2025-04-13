@@ -1,7 +1,6 @@
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    ReplyKeyboardMarkup,
 )
 
 
@@ -44,11 +43,3 @@ def history_pagination_keyboard(page: int, total_pages: int):
         [InlineKeyboardButton("🔙 Назад", callback_data="back_to_profile")],
     ]
     return InlineKeyboardMarkup(buttons)
-
-
-def get_main_reply_keyboard():
-    """Возвращает основную клавиатуру."""
-    buttons = [
-        ["👤 Профиль", "❔ Как пользоваться?"],
-    ]
-    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
