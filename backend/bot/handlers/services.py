@@ -5,8 +5,12 @@ from telegram.ext import ContextTypes
 
 from bot.constants import NO_HAVE_LIMITS_MSG
 from bot.handlers.utilities import how_to_use, profile
-from bot.keyboards.profile import profile_keyboard, back_to_profile_keyboard, remove_stats_keyboard, \
-    history_pagination_keyboard
+from bot.keyboards.profile import (
+    back_to_profile_keyboard,
+    history_pagination_keyboard,
+    profile_keyboard,
+    remove_stats_keyboard,
+)
 from bot.utils.statistics import generate_pie_chart
 from core.database import get_db
 from crud.limits import get_limits

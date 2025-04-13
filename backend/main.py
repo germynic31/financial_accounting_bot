@@ -1,8 +1,3 @@
-from bot.handlers.limits import set_limit_command, show_limits
-from bot.handlers.services import button_click, handle_message
-from bot.handlers.utilities import start, how_to_use, profile
-from core.config import settings
-from core.database import init_db
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -10,6 +5,12 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+
+from bot.handlers.limits import set_limit_command, show_limits
+from bot.handlers.services import button_click, handle_message
+from bot.handlers.utilities import how_to_use, profile, start
+from core.config import settings
+from core.database import init_db
 
 
 async def post_init(app: Application):

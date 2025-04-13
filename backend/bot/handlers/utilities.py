@@ -5,7 +5,7 @@ from bot.constants import HOW_TO_USE_MSG
 from bot.keyboards.profile import profile_keyboard
 from bot.keyboards.utilities import get_main_reply_keyboard
 from core.database import get_db
-from crud.users import get_user, create_user
+from crud.users import create_user, get_user
 from schemas.users import UserCreate
 
 

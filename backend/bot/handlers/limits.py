@@ -5,7 +5,7 @@ from telegram.ext import ContextTypes
 
 from bot.constants import NO_HAVE_LIMITS_MSG
 from core.database import get_db
-from crud.limits import set_limit, get_limits
+from crud.limits import get_limits, set_limit
 from schemas.limits import LimitCreate
 
 
