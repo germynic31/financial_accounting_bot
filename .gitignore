@@ -136,11 +136,11 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
+# Spyder project bot_settings
 .spyderproject
 .spyproject
 
-# Rope project settings
+# Rope project bot_settings
 .ropeproject
 
 # mkdocs documentation
@@ -172,3 +172,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Jetbrains configuration file
+.idea/
+.idea
+.idea/*
+.vscode
+*.db
+*.sqlite3
+*.bak
+*.env
