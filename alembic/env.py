@@ -10,12 +10,13 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from backend.models import Base
+from backend.core.models import Base
+from backend.core.config import settings
 
 load_dotenv()
 
 config = context.config
-config.set_main_option('sqlalchemy.url', os.environ['DATABASE_URL'])
+config.set_main_option('sqlalchemy.url', settings.DATABASE_URL_DEV)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

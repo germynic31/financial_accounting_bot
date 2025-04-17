@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import Limit
+from core.models import Limit
 from schemas.limits import LimitCreate
 
 

@@ -1,9 +1,9 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from core.models import Transaction
 from crud.categories import get_or_create_category
 from crud.limits import get_limit
-from models import Transaction
 from schemas.categories import CategoryCreate
 from schemas.transactions import TransactionCreate
 from tools.enums import TransactionEnum
@@ -13,7 +13,7 @@ def create_transaction(
         db: Session,
         transaction: TransactionCreate,
         user_id: int,
-) -> dict[str, Transaction or str]:
+) -> dict[str, Transaction | str]:
     """Создает операцию."""
     category = get_or_create_category(
         db,

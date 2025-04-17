@@ -1,16 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from core.config import settings
-from models import Base
+from .config import settings
 
-engine = create_engine(settings.DATABASE_URL)
+engine = create_engine(settings.DATABASE_URL_DEV)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-def init_db():
-    """Создает базу данных."""
-    Base.metadata.create_all(bind=engine)
 
 
 def get_db():  # TODO: сделать Session DI

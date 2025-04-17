@@ -3,7 +3,7 @@ from typing import Dict, List
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from models import Category, Transaction, User
+from core.models import Category, Transaction, User
 from schemas.users import UserCreate
 
 

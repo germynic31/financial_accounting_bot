@@ -14,3 +14,10 @@ class PeriodEnum(str, Enum):
     week = 'week'
     month = 'month'
     year = 'year'
+
+
+class RoleEnum(str, Enum):
+    """Роли пользователей в системе."""
+
+    user = 'user'
+    admin = 'admin'

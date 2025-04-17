@@ -12,7 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import declared_attr, relationship
 
-from tools.enums import TransactionEnum
+from tools.enums import RoleEnum, TransactionEnum
 
 
 @as_declarative()
@@ -27,6 +27,9 @@ class Base:
         name = self.__name__.lower()
         return f'{name}ies' if name.endswith('y') else f'{name}s'
 
+    def __repr__(self) -> str:
+        return f'id: {self.id}. '
+
 
 class User(Base):
     """Модель пользователя."""
@@ -34,9 +37,15 @@ class User(Base):
     __tablename__ = 'users'
     telegram_id = Column(Integer, unique=True, nullable=False)
     username = Column(String)
-    categories = relationship("Category", back_populates="user")
-    transactions = relationship("Transaction", back_populates="user")
-    limits = relationship("Limit", back_populates="user")
+    role = Column(Enum(RoleEnum), nullable=True, default=RoleEnum.user)
+    password_hash = Column(String, nullable=True)
+
+    categories = relationship('Category', back_populates='user')
+    transactions = relationship('Transaction', back_populates='user')
+    limits = relationship('Limit', back_populates='user')
+
+    def __repr__(self) -> str:
+        return f'{super().__repr__()}username: {self.username}'
 
 
 class Category(Base):
@@ -45,8 +54,11 @@ class Category(Base):
     __tablename__ = 'categories'
     name = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="categories")
-    transactions = relationship("Transaction", back_populates="category")
+    user = relationship('User', back_populates='categories')
+    transactions = relationship('Transaction', back_populates='category')
+
+    def __repr__(self) -> str:
+        return f'{super().__repr__()}name: {self.name}'
 
 
 class Transaction(Base):
@@ -58,8 +70,11 @@ class Transaction(Base):
     description = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
     category_id = Column(Integer, ForeignKey('categories.id'))
-    user = relationship("User", back_populates="transactions")
-    category = relationship("Category", back_populates="transactions")
+    user = relationship('User', back_populates='transactions')
+    category = relationship('Category', back_populates='transactions')
+
+    def __repr__(self) -> str:
+        return f'{super().__repr__()}type: {self.type}. amount: {self.amount}'
 
 
 class Limit(Base):
@@ -71,4 +86,10 @@ class Limit(Base):
     amount = Column(Float, nullable=False)
     period = Column(String, default='month')  # TODO: enum month/week/year
     last_renewed = Column(DateTime, default=datetime.now)
-    user = relationship("User", back_populates="limits")
+    user = relationship('User', back_populates='limits')
+
+    def __repr__(self) -> str:
+        return (
+            f'{super().__repr__()}category_name: {self.category_name}.'
+            f'amount: {self.amount}'
+        )

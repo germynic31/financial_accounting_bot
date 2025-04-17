@@ -10,19 +10,13 @@ from bot.handlers.limits import set_limit_command, show_limits
 from bot.handlers.services import button_click, handle_message
 from bot.handlers.utilities import how_to_use, profile, start
 from core.config import settings
-from core.database import init_db
-
-
-async def post_init(app: Application):
-    """Создает базу данных при запуске."""
-    init_db()
 
 
 def main():
     """Функция main."""
     application = Application.builder().token(
-        settings.API_KEY,
-    ).post_init(post_init).build()
+        settings.TG_API_KEY,
+    ).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("how_to_use", how_to_use))
